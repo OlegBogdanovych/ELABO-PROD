@@ -46,9 +46,11 @@ private class DossierUtilTest {
                                     TimeZoneSidKey='America/Los_Angeles', UserName='Ok@test.test', 
                                     Label__c = 'Elabo', City='Amsterdam', Country='Nederland', Street = 'Dantestraat', PostalCode='3076 KJ');
         insert user;
+        System.debug([select Id from Dossier__Share ]);
         Test.startTest();
         dossier.handler__c = user.Id;
         update dossier;
+         System.debug([select Id from Dossier__Share ]);
         Test.stopTest();
     }
     
@@ -109,10 +111,10 @@ private class DossierUtilTest {
         Dossier__c dossier = [SELECT Id,  Relatie__c, Product_exception__c, 
                             Contactpersoon_opdrachtgever__c, Datum_Binnenkomst__c FROM Dossier__c 
                             WHERE handler__c =: UserInfo.getUserId() AND Ingangsdatum__c =: mydate+1 LIMIT 1]; 
-   		Test.startTest();
+        Test.startTest();
         dossier.Ingangsdatum__c = mydate + 2;
         update dossier;
-    	Test.stopTest();
+        Test.stopTest();
 
     }
 

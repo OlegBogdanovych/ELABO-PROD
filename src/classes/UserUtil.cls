@@ -15,11 +15,13 @@ public with sharing class UserUtil {
             }           
 
         }
-        if(triggerParams.isAfter) {
+        if(triggerParams.isAfter ) {
+        
             if(triggerParams.isUpdate || triggerParams.isInsert) {
+
                 addUserToGroup(triggerNew);         
             }
-            if(triggerParams.isUpdate) {
+            if(triggerParams.isUpdate && !System.isFuture()) {
                 updateUser(triggerNew,oldMap);              
             }
         }
@@ -116,6 +118,6 @@ public with sharing class UserUtil {
     public static void callDossierUtil(Set<Id> usersIdsOfInernProfile) {
         Map<Id, Dossier__c> dossierWithProffesional = new Map <Id, Dossier__c>([select handler__c, Id, OwnerId From Dossier__c where handler__c IN:  usersIdsOfInernProfile]);
         System.debug('dossierWithProffesional future: ' + dossierWithProffesional);
-        DossierUtil.apexSharingInsert(dossierWithProffesional.keyset(),null);
+        DossierUtil.apexSharingInsertForUser(dossierWithProffesional.keyset(),null);
     }
 }
