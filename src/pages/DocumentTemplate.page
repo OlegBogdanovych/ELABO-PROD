@@ -1,0 +1,94 @@
+<apex:page standardController="Dossier__c" extensions="DocumentTemplateExtension" showHeader="true" sidebar="true"  docType="html-5.0">
+    
+     <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">     
+        <head>
+            
+            
+              <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+              <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/3.5.1/select2.js" />
+            <apex:includeLightning />
+            <apex:stylesheet value="{!URLFOR($Resource.SLDS080, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+            <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/select2/3.5.1/select2.css"/>
+<script>
+
+          $(document).ready(function() { $("#select2").select2(); });
+
+
+      </script>
+            <style>
+            body {
+                font-size: 11px;
+                color:black;
+                font:  'Salesforce Sans',Arial,sans-serif;
+            }
+                .space{
+                    margin:2px;
+                }
+                .dateInput1{
+                    width: 80% !important;
+                }
+                
+                .select2-drop-active, .select2-active, .select2 , .active{
+                     border: 0px !important;
+                 } 
+                 .slds a:hover, .slds a:focus {
+                     text-decoration: none;
+                     color:black;
+                 }
+            </style>
+          
+             
+
+        </head>
+        
+    <body>
+         
+         <apex:form styleClass="slds-form--stacked" >
+     
+           
+            <apex:actionFunction action="{!createTemplate}" name="wwww"    reRender="form" oncomplete="$('#select2').select2();">
+                <apex:param value="" assignTo="{!selectedTemplate}" name="selectedTemplate"/>
+            </apex:actionFunction>
+            
+                 <apex:outputPanel id="form">
+                    <div class="slds">   
+                        <div class="slds-page-header" role="banner">
+                            
+                            
+                              <div class="slds-grid">  
+                                <div class="slds-col slds-container--medium">
+           
+                                   
+                                    <select id="select2" style="width:100%"  >
+                                        <apex:repeat value="{!templates}" var="template">
+                                            <option value="{!template.value}">{!template.Label}</option>
+                                        </apex:repeat>
+                                    </select>
+                                    <br/>
+                                                                        <br/>                                  
+                                    <div class="slds-button-group" role="group">
+                                     
+                                       <input type="button" value="{!$Label.Create}" onclick="createSCR();" class="slds-button slds-button--neutral"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  </apex:outputPanel>      
+                   <script>
+           
+           function createSCR(){
+               var selectedTemplate= $('#select2').val();
+              console.log(selectedTemplate);
+             
+              wwww(selectedTemplate);
+            
+            }
+            
+        </script>   
+            </apex:form>
+       
+     </body>
+          
+     </html>
+</apex:page>

@@ -1,0 +1,133 @@
+<apex:page sidebar="true" controller="SendInvoice" renderAs="pdf" standardStylesheets="false" showHeader="false" Applyhtmltag="false"><!--renderAs="pdf"-->
+    <head>
+        <style type="text/css">
+            @page {
+            //margin: 10%;
+            margin-top: 10%;
+
+            @top-center {
+              content: element(header);
+            }
+
+            @bottom-right {
+              content: "Page " counter(page) " of " counter(pages);
+            }
+           
+            .inline { 
+                display: inline-block; 
+               
+                margin:10px;
+            }
+             
+          }
+        </style>
+    </head>
+    <body>
+        <apex:form >
+        
+            <div style="margin-bottom: 50px;">
+                <apex:outputText value="{!data.company.Name}"/><br/>
+                <apex:outputText value="{!data.company.BillingStreet} " rendered="{!data.company.BillingStreet != null}"/>
+                <apex:outputText value="{!data.company.ShippingStreet} " rendered="{!data.company.BillingStreet == null}"/><br/>
+                <apex:outputText value="{!data.company.BillingPostalCode} " rendered="{!data.company.BillingPostalCode != null}"/>
+                <apex:outputText value="{!data.company.ShippingPostalCode} " rendered="{!data.company.BillingPostalCode == null}"/>
+                <apex:outputText value="{!data.company.BillingCity} " rendered="{!data.company.BillingCity != null}"/>
+                <apex:outputText value="{!data.company.ShippingCity} " rendered="{!data.company.BillingCity == null}"/><br/>
+                
+            </div>
+        
+
+            <div style="margin-bottom: 50px;">
+
+                    
+                
+                <div>
+                    <div style="float:left;">
+                        <div style="float:left; " >
+                            Factuurnummer:<br/>
+                            Debiteurnummer:<br/>
+                            Dossier:
+                        </div>
+                        <div style="float:right;   margin-left: 10px; text-align: right;">
+                            {!data.factuurnummer}<br/>
+                            {!data.company.Debiteurnummer__c}<br/>
+                            {!data.dossier.name}
+                        </div>
+                    </div>
+                    <div style="float:right; ">
+                        <div style="float:left;  margin-left: 10px;">
+                            Factuurdatum:<br/>
+                            Vervaldatum: 
+                        </div>
+                        <div style="float:right;  margin-left: 10px;">
+                            {!data.invoiceDate}<br/>
+                            {!data.duedate}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br/>
+                <br/>
+                    <br/>
+            <div>
+                <table width="100%" style="border-top:1px solid black !important; border-bottom:1px solid black !important;" >
+                       <tr>
+                            <td valign="top" style="width:10%;text-align:right;"><b>Hoeveelheid<br/></b></td>
+                            <td valign="top" style="text-align:center;"><b>Beschrijving<br/></b></td>
+                            <td valign="top" style="width:15%;text-align:right;"><b>Prijs<br/></b></td>
+                            <td valign="top" style="width:15%;text-align:right;"><b>Totaal</b><br/>(excl. BTW)</td>
+                            <td valign="top" style="width:10%;text-align:right;"><b>BTW%<br/></b></td>
+                        </tr>
+                        <apex:repeat value="{!data.linesPerDos}" var="line">
+                            <tr>
+                                <td style="text-align:right;">{!line.quantityLine}</td>
+                                <td style="text-align:center;">{!line.descriptionLine}</td>
+                                <td style="text-align:right;">€ {!line.priceLine}</td>
+                                <td style="text-align:right;">€ {!line.totalLineEx}</td>
+                                <td style="text-align:right;">{!data.btw}</td>
+                            </tr>
+                        </apex:repeat>
+                    </table>
+               
+                
+            </div>
+            
+           <br/><br/>
+            
+           <div style="float:right; position:relative;">
+                
+                <div style="float:left; margin-left: 5px;">
+                    <table width="100%" >
+                        <tr>
+                            <td style="padding-right: 10px;"><b>Totaal (excl. BTW)</b> </td>
+                            
+                            <td style="padding-right: 10px;text-align:right;"><b> <apex:outputText value="€ {!data.priceStr}"/></b></td>
+                        </tr>
+                        <tr>
+                            <td style="padding-right: 10px;">BTW {!data.btw}% (over &nbsp;
+                           
+                                <apex:outputText value="€ {!data.priceStr}"/>
+                            
+                                )</td>
+                            <td style="padding-right: 10px;text-align:right;"><apex:outputText value="{!data.vatStr}"/></td>
+                        </tr>
+                        <tr>
+                            <td style="padding-right: 10px;"><b>Totaal (incl. BTW)</b> </td>
+                            <td valign="top" style="padding-right: 10px;text-align:right;" >
+                                   
+                                
+                                <b>   
+                                    <apex:outputText value=" € {!data.sumStr}"/>
+                                    </b>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                </div>
+     
+                
+            </div>
+        
+        </apex:form>
+    </body>
+</apex:page>

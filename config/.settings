@@ -1,0 +1,16 @@
+{
+    "projectName": "ELABO-PROD",
+    "username": "elabo-gxad@force.com",
+    "id": "7062c020-1b6b-11e7-9480-a70221c16c3e",
+    "namespace": "",
+    "environment": "production",
+    "loginUrl": "",
+    "workspace": "C:\\Projects",
+    "subscription": [
+        "ApexClass",
+        "ApexComponent",
+        "ApexPage",
+        "ApexTrigger",
+        "StaticResource"
+    ]
+}

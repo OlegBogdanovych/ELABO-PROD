@@ -1,0 +1,56 @@
+<apex:page showHeader="true" sidebar="true" standardController="Dossierproduct__c" extensions="CreateDossierProductExtension" action="{!loadData}" docType="html-5.0">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">   
+        <head>
+            
+            <apex:includeLightning />
+            <apex:stylesheet value="{!URLFOR($Resource.SLDS080, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+            <style type="text/css">
+                .slds-theme--error {
+                    color: #fff;
+                    background-color: #c23934;
+                }
+                .slds-box {
+                    padding: 1rem;
+                    border-radius: .25rem;
+                    background-clip: padding-box;
+                    border: 1px solid #d8dde6;
+                }
+            </style>
+        </head>
+        <body>
+            <apex:form styleClass="slds-form--stacked">
+                <apex:outputPanel rendered="{!errorMessage != null}">
+                    <div class="slds-box slds-theme--error">
+                      <p>{!errorMessage}</p>
+                    </div>
+                </apex:outputPanel>
+                <div class="slds">   
+                    <div class="slds-page-header" role="banner">
+                        <div class="slds-grid">
+                            <div class="slds-col">
+                                <p class="slds-text-heading--label">{!$ObjectType.Product__c.Label}</p>
+                                <h1 class="slds-text-heading--medium">{!$Label.New_Product}</h1>
+                            </div>
+                            <div class="slds-col slds-no-flex slds-align-middle">
+                                <div class="slds-button-group" role="group">
+                                    <apex:commandButton value="{!$Label.Save}" action="{!save}" styleclass="slds-button slds-button--neutral"/>
+                                    <apex:commandButton value="{!$Label.Cancel}" action="{!cancel}" styleclass="slds-button slds-button--neutral"/>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="slds-grid">
+                            <div class="slds-col slds-container--medium">
+                                <apex:inputText value="{!Dossierproduct__c.Dossier__c}" style="visibility: hidden"/>
+                                <apex:selectList value="{!selectedProductId}" size="1" styleclass="slds-select">
+                                    <apex:selectOptions value="{!products}"/>
+                                </apex:selectList>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                            
+            </apex:form>
+        </body>
+    </html>
+</apex:page>

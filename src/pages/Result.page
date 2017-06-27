@@ -1,0 +1,82 @@
+<apex:page showHeader="true" sidebar="true" standardController="Dossier__c" extensions="ResultExtension" docType="html-5.0">
+    <apex:includeLightning />
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">     
+        <head>
+            
+            <apex:includeLightning />
+            <apex:includeScript value="{!$Resource.jquery}"/>
+            <apex:stylesheet value="{!URLFOR($Resource.SLDS080, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+            <style>
+                .space{
+                    margin:2px;
+                }
+                .dateInput1{
+                    width: 80% !important;
+                }
+            </style>
+        </head>
+        <body>
+
+    
+            <script src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
+            <apex:form >
+                <apex:actionFunction name="fillListAct" action="{!fillList}" rerender="fields"/>
+                
+                    <div class="slds">   
+                        <apex:outputPanel rendered="{!(message != null && isError)}">
+                            <div class="slds-notify_container">
+                              <div class="slds-notify slds-notify--alert slds-theme--error slds-theme--alert-texture" role="alert">
+                                <button class="slds-button slds-notify__close slds-button--icon-inverse">
+                                  <svg aria-hidden="true" class="slds-button__icon">
+                                    <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                                  </svg>
+                                  <span class="slds-assistive-text">Close</span>
+                                </button>
+                                <span class="slds-assistive-text">Error</span>
+                                <h2>
+                                  {!message}</h2>
+                              </div>
+                            </div>
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!(message != null && NOT(isError))}">
+                            <div class="slds-notify_container">
+                              <div class="slds-notify slds-notify--alert slds-theme--info slds-theme--alert-texture" role="alert">
+                                <button class="slds-button slds-notify__close slds-button--icon-inverse">
+                                  <svg aria-hidden="true" class="slds-button__icon">
+                                    <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                                  </svg>
+                                  <span class="slds-assistive-text">Close</span>
+                                </button>
+                                <span class="slds-assistive-text">Error</span>
+                                <h2>
+                                  {!message}</h2>
+                              </div>
+                            </div>
+                        </apex:outputPanel>
+
+                        <apex:outputPanel id="fields">
+                            <div class="slds-page-header" role="banner">
+                                <apex:repeat value="{!visibilityByFieldName}" var="fieldMap">
+                                    <div class="slds-truncate">
+                                        <apex:outputLabel value="{!fieldMap.label}" rendered="{!fieldMap.visibility}"/>
+                                    </div>
+                                    <apex:inputField value="{!dossier[fieldMap.fieldName]}" rendered="{!fieldMap.visibility}" styleclass="slds-input slds-select space dateInput1" id="field" onchange="checkRelated();"/>
+                                </apex:repeat>
+                            </div>
+                        </apex:outputPanel>
+                        <br/>
+                        <apex:commandButton styleclass="slds-button slds-button--neutral" action="{!saveDossier}" value="{!$Label.Save}" disabled="{!Dossier.Status__c == 'Gesloten'}"/>
+                        
+                    </div>
+                
+            <script>
+                function checkRelated( ){
+                    fillListAct();
+                }
+
+               
+                </script>
+            </apex:form>
+        </body>
+    </html>
+</apex:page>

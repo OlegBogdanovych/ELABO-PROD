@@ -1,0 +1,678 @@
+<apex:page standardStyleSheets="false"  controller="MatchingExtension" action="{!loadData}" docType="html-5.0" >
+    <apex:includeLightning />
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">   
+        <head>
+            
+            <apex:includeLightning />
+            <apex:stylesheet value="{!URLFOR($Resource.SLDS080, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+            <style>
+            form {
+                position:absolute;
+            }
+                .default-theme {
+                    background-color: rgb(63,81,181);
+                    color: #f4f6f9;
+                    padding: 15px;
+                    width:99%;
+                }
+                .default-error{
+                    background-color: #FF6347;
+                    color: #f4f6f9;
+                    font-size: 20px;
+                    padding: 15px;
+                }
+                .default-theme span {
+                    font-size: 20px;
+                }
+                .asc ::after{
+                    content: url({!$Resource.down});
+                }
+                .desc ::after{
+                    content: url({!$Resource.up});
+                }
+                .sh {
+                    visibility: visible !important;
+                }
+                .down, .up {
+                    margin-bottom: 4px;
+                    //display:block; 
+                }
+            </style>
+        </head>
+        <body>
+
+    
+            <script src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
+           
+          
+            <apex:form styleClass="slds-form--stacked" >
+                 <div class="default-theme">
+                <span>Matching overview</span>
+                
+                <span flex="flex"></span>
+            </div>
+                <apex:actionFunction name="addFilterPrAct" action="{!addFilterPr}" rerender="users"/>
+                <apex:actionFunction name="findAllUsers" action="{!findUsers}" rerender="users, test, voors, voorDoss, error" oncomplete="addSort();"/>
+                <apex:actionFunction name="addSort" action="{!sortByFiledUser}" rerender="users, test, voors, voorDoss, error" oncomplete="focusError ();"/>
+                <apex:actionFunction name="filterUnAct" action="{!addFilterToDossiers}" rerender="unmatchedDoss" onbeforedomupdate="captureFocus();" oncomplete="addArrow();">
+                    <apex:param value="" name="seacrhByNumber" assignTo="{!seacrhByNumber}"/>
+                    <apex:param value="" name="seacrhByClientName" assignTo="{!seacrhByClientName}"/>
+                    <apex:param value="" name="seacrhByAddress" assignTo="{!seacrhByAddress}"/>
+                </apex:actionFunction>
+                <apex:actionFunction name="closeMatch" action="{!closeMatchUser}" rerender="users, test"/>
+                <apex:actionFunction name="setOpenAct" action="{!setOpen}" rerender="users, todayMatched, test, unmatchedDoss, voors, voorDoss, error" oncomplete="focusError ();"/>
+                <apex:actionFunction name="finishMatchingAct" action="{!finishMatching}" rerender="users, error, test, todayMatched,voors, unmatchedDoss, voorDoss" oncomplete="focusError ();"/>
+                <apex:actionFunction name="addFilterAct" action="{!addFilter}" rerender="users,test, error" onbeforedomupdate="captureFocus();" oncomplete="addArrow();"/>
+                <apex:actionFunction name="sortByFiledAct" action="{!sortByFiled}" rerender="users, test, todayMatched,voors, unmatchedDoss, voorDoss" onbeforedomupdate="captureFocus();" oncomplete="addArrow();">
+                    <apex:param value="" name="sortDirection" assignTo="{!sortDirection}"/>
+                    <apex:param value="" name="sortField" assignTo="{!sortField}"/>
+                </apex:actionFunction>
+                <apex:actionFunction name="sortByFiledUserAct" action="{!sortByFiledUser}" rerender="users, test" onbeforedomupdate="captureFocus();" oncomplete="addArrow();">
+                    <apex:param value="" name="sortDirection" assignTo="{!sortDirection}"/>
+                    <apex:param value="" name="sortField" assignTo="{!sortField}"/>
+                </apex:actionFunction>
+                <apex:actionFunction name="sortByFiledVoorAct" action="{!sortByFiledVoor}" onbeforedomupdate="captureFocus();" rerender="voors,voorDoss" oncomplete="addArrow();">
+                    <apex:param value="" name="sortDirection" assignTo="{!sortDirection}"/>
+                    <apex:param value="" name="sortField" assignTo="{!sortField}"/>
+                </apex:actionFunction>
+                <apex:actionFunction name="saveDef" action="{!saveDefault}" oncomplete="setFocusAndSort();">
+                    <apex:param value="" name="focus" assignTo="{!focus}"/>
+                </apex:actionFunction>
+                
+                <apex:actionFunction name="unmatchAction" action="{!unmatch}" rerender="unmatchedDoss, voors, voorDoss, error" oncomplete="focusError ();" />
+                <apex:outputPanel id="error" >
+                    <apex:outputPanel rendered="{!AND(errorMessage != null, errorMessage != '')}"> 
+                        <div class="default-error">
+                             <apex:outputText value="{!errorMessage}" id="erMsg" />
+                        </div>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+               
+                <apex:outputPanel id="unmatchedDoss" rendered="{!showUnDoos}">
+                    <div class="slds">   
+                    
+                        <div class="slds-page-header" role="banner">
+                            {!$Label.Unmatched_dossiers}<br/>
+                            <div class="slds-grid">
+                                
+                                <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+                                    <thead>
+                                        <tr class="slds-text-heading--label">
+                                            <th scope="col" title="Opportunity Name">
+                                                <div class="slds-truncate"><input type="checkbox" name="options" disabled="true" /></div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate"><a href="#" id="Name" onclick="sortByFiledScr('Name');">{!$ObjectType.Dossier__c.Fields.Name.Label}</a><br/>
+                                                <apex:inputText styleclass="slds-input" value="{!seacrhByNumber}" onkeyUp="filterUnmatched();" id="searchNumberId"/></div>
+                                            </th>
+                                            <th scope ="col">
+                                                <div class="slds-truncate"><a href="#" id="Product_gekoppeld__c" onclick="sortByFiledScr('Product_gekoppeld');">{!$ObjectType.Dossier__c.Fields.Product_gekoppeld__c.Label}</a><br/>
+                                                </div>
+                                            </th>
+                                            <th scope ="col">
+                                                <div class="slds-truncate"><a href="#">Product</a><br/>
+                                                </div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate"><a href="#" id="Load" onclick="sortByFiledScr('Load');">Dossier Load</a><br/>
+                                                    
+                                                </div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate">Label<br/>
+                                                    <apex:selectList value="{!selectedSkillUn}" styleclass="slds-select" size="1" onchange="filterUnmatched();">
+                                                        <apex:selectOptions value="{!skillFilter}"/>
+                                                    </apex:selectList>
+                                                </div>
+                                            </th>
+                                            
+                                            <th scope="col">
+                                                <div class="slds-truncate">Productgroep<br/>
+                                                    <apex:selectList value="{!selectedProductGroup}" styleclass="slds-select" size="1" onchange="filterUnmatched();">
+                                                        <apex:selectOptions value="{!productgroupFilter}"/>
+                                                    </apex:selectList>
+                                                </div>
+                                            </th>
+                                            
+                                            <th scope="col" >
+                                                <div class="slds-truncate"><a id="Datum" href="#" onclick="sortByFiledScr('Datum');">{!$ObjectType.Dossier__c.Fields.Ingangsdatum__c.Label}</a></div>
+                                            </th>
+                                            <th scope="col" >
+                                                <div class="slds-truncate"><a id="End" href="#" onclick="sortByFiledScr('End');">{!$ObjectType.Dossier__c.Fields.Einddatum__c.Label}</a></div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate"><a id="AccountName" href="#" onclick="sortByFiledScr('AccountName');">Klantnaam</a><br/>
+                                                <apex:inputText value="{!seacrhByClientName}" onkeyUp="filterUnmatched();" id="searchNameId" styleclass="slds-input"/></div>
+                                            </th>
+                                           
+                                            <th scope="col" >
+                                                <div class="slds-truncate"><a href="#" id="OtherAddress" onclick="sortByFiledScr('OtherAddress');">{!$ObjectType.Contact.Fields.OtherAddress.Label}</a><br/>
+                                               </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        
+                                            <apex:repeat value="{!unmatchedDossiers}" var="dos" >
+                                                
+                                                    <tr class="slds-hint-parent"  style="display: {!IF(dos.show, 'table-row', 'none')}">
+                                                    
+                                                        <td class="slds-cell-shrink" data-label="Select Row">
+                                                            <apex:inputCheckbox value="{!dos.IsSelected}" styleClass="unmatchedCheckbox" onclick="checkboxWasChanged(this);"/>
+                                                        </td>
+                                                        <td class="slds-cell-shrink" data-label="Select Row">
+                                                            <apex:outputLink value="/{!dos.dossier.id}">{!dos.dossier.Name}</apex:outputLink>
+                                                        </td>
+                                                        <td class="slds-cell-shrink" data-label="Select Row">
+                                                            <apex:outputField value="{!dos.dossier.Product_gekoppeld__c }"/>
+                                                        </td>
+                                                        <td class="slds-cell-shrink" data-label="Select Row">
+                                                            <apex:outputField value="{!dos.product.Name}"/>
+                                                        </td>
+                                                        <td class="slds-cell-shrink" data-label="Select Row">
+                                                            <apex:outputText value="{!dos.product.Product_tijd_UU_MM__c}"></apex:outputText>
+                                                        </td>
+                                                        <td class="slds-cell-shrink" data-label="Select Row">
+                                                            <apex:outputField value="{!dos.dossier.Label__c}"/>
+                                                        </td>
+                                                        
+                                                        <td class="slds-cell-shrink" data-label="Select Row" style="white-space: normal !important;">   
+                                                            <apex:outputField value="{!dos.product.Productgroep__c}"/>
+                                                        </td>
+                                                        <td class="slds-cell-shrink" data-label="Select Row">
+                                                            <apex:outputField value="{!dos.dossier.Ingangsdatum__c}"/>
+                                                        </td>
+                                                        <td class="slds-cell-shrink" data-label="Select Row">   
+                                                            <apex:outputField value="{!dos.dossier.Einddatum__c}"/>
+                                                        </td>
+                                                        <td class="slds-cell-shrink" data-label="Select Row">   
+                                                            <apex:outputLink value="/{!dos.dossier.Relatie__c}">{!dos.dossier.Relatie__r.Name}</apex:outputLink>
+                                                        </td>
+                                                       
+                                                        <td class="slds-cell-shrink" data-label="Select Row">   
+                                                            <apex:outputText value="{!dos.dossier.Plaats__c + ' ' + dos.dossier.Straat__c + ' ' + dos.dossier.Postcode__c}"/>
+                                                        </td>
+                                                    </tr>
+                                                
+                                            </apex:repeat>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                            <input  class="slds-button slds-button--neutral" type="button" onclick ="startMatching();" value="Zoek behandelaar voor geselecteerd dossier"/>
+                        </div>
+                    </div>
+                </apex:outputPanel>
+                
+                <apex:outputPanel id="users" >
+                    <apex:outputPanel rendered="{!showUsers}">
+                                <apex:outputText value="{!focus}" id="focus1" style="display:none;"/>
+                                <apex:outputText value="{!sortField}" id="sortField1" style="display:none;"/>
+                                <apex:outputText value="{!sortDirection}" id="sortDirection1" style="display:none;"/>
+                        <div class="slds">   
+                            <div class="slds-page-header" role="banner">
+                                Behandelaar opties<br/>
+                                <div class="slds-grid">
+                                    
+                                    <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+                                        <thead>
+                                            <tr class="slds-text-heading--label">
+                                                <th scope="col" title="Opportunity Name">
+                                                    <div class="slds-truncate"><input type="checkbox" name="options" disabled="true" />
+                                                    </div>
+                                                </th>
+                                                <th scope="col" >
+                                                    <div class="slds-truncate"><a href="#users" id="Name2" style="display: inline" onclick="sortByFiledUserScr('Name');">Naam behandelaar </a><br/>
+                                                    <apex:inputText styleclass="slds-input" value="{!filterByUserName}" id="Name2Id" onkeyUp="filterByUserName();" />
+                                                    </div>
+                                                </th>
+                                                <th scope="col" >
+                                                    <div class="slds-truncate"><a href="#users" id="Skill2" onclick="sortByFiledUserScr('Skill');">Label</a><br/></div>
+                                                    <apex:selectList value="{!selectedSkill1}" size="1" styleclass="slds-select" onchange="filterBySkillUser();">
+                                                        <apex:selectOptions value="{!skillFilter}"/>
+                                                    </apex:selectList>
+                                                </th>
+                                                <th scope="col" >
+                                                    <div class="slds-truncate"><a href="#users" id="Skill3" >Productgroep</a><br/></div>
+                                                    <apex:inputCheckbox value="{!productShow}" onchange="filterBySkillUser()"/>
+                                                </th>
+                                                <th scope="col" >
+                                                    <div class="slds-truncate"><a href="#users" id="uren2" style="display: inline" onclick="sortByFiledUserScr('uren');">Beschikbare uren</a><br/></div>
+                                                </th>
+                                                <th scope="col" >
+                                                    <div class="slds-truncate"><a href="#users" id="Mogelijk2" style="display: inline" onclick="sortByFiledUserScr('Mogelijk');">Mogelijk</a>
+                                                    <br/><apex:inputCheckbox value="{!showLessThanLoad}" onchange="filterBySkillUser()"/></div>
+                                                </th>
+                                                <th scope="col" >
+                                                    <div class="slds-truncate"><a href="#users" id="type2" style="display: inline" onclick="sortByFiledUserScr('type');">Medewerker type</a>
+                                                    <br/>
+                                                    <apex:selectList value="{!selectedType}" size="1" styleclass="slds-select" onchange="filterBySkillUser();">
+                                                        <apex:selectOptions value="{!typeFilter}"/>
+                                                    </apex:selectList>
+                                                    </div>
+                                                </th>
+                                                <th scope="col" >
+                                                    <div class="slds-truncate"><a href="#users" id="Voorkeur2" style="display: inline" onclick="sortByFiledUserScr('Voorkeur');">Voorkeur</a>
+                                                    <br/><apex:inputCheckbox value="{!showTeamOnly}" onchange="filterBySkillUser()"/></div>
+                                                </th>
+
+                                                <th scope="col" >
+
+                                                    <div class="slds-truncate"><a href="#users" id="Address2" onclick="sortByFiledUserScr('Address');">Address</a><br/>
+                                                    
+                                                    </div>
+                                                </th>
+                                                <th scope="col" >
+
+                                                    <div class="slds-truncate"><a href="#users" id="Address32" onclick="sortByFiledUserScr('Address3');">Afstand (distance)</a><br/>
+                                                    </div>
+                                                </th>
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+                                            
+                                                <apex:repeat value="{!users}" var="user" >
+                                            
+                                                
+                                                    <tr class="slds-hint-parent" style="display: {!IF(user.show, 'table-row', 'none')}">
+                                                        <td class="slds-cell-shrink" >
+                                                        
+                                                                <apex:inputCheckbox value="{!user.IsSelected}" styleClass="userCheckbox" onclick="checkboxWasChanged1(this);"/>
+                                                            
+                                                        </td>
+                                                        <td class="slds-cell-shrink" >
+                                                        
+                                                                <apex:outputLink value="/{!user.user.id}">{!user.user.Name}
+                                                                </apex:outputLink>
+                                                            
+                                                        </td>
+                                                        <td class="slds-cell-shrink" >
+                                                            <apex:outputField value="{!user.user.Label__c }"/>
+                                                        </td>
+                                                         <td class="slds-cell-shrink" style="white-space: normal !important;">
+                                                            <apex:outputText value="{!user.user.Productgroep__c}" id="prodIdToChange"/>
+                                                        </td>
+                                                        <td class="slds-cell-shrink" >
+                                                            <apex:outputText value="{0, number, 00.00}">
+
+                                                                   <apex:param value="{!user.loadDos}" />
+                                                            </apex:outputText>
+
+                                                        </td>
+                                                        <td class="slds-cell-shrink" >
+                                                            <apex:outputText value="{!user.mogelick }"/>
+                                                        </td>
+                                                        <td class="slds-cell-shrink" >
+                                                            <apex:outputField value="{!user.user.Medewerker_Type__c}"/>
+                                                        </td>
+                                                        <td class="slds-cell-shrink" >
+                                                             <apex:outputText value="{!user.voorkeur }"/>
+                                                        </td>
+                                                        <td class="slds-cell-shrink" >
+                                                            
+                                                                <apex:outputText value="{!user.user.City +' ' + user.user.Street + ' ' + user.user.PostalCode}"/>
+                                                        
+                                                        </td>
+                                                        <td class="slds-cell-shrink" >
+                                                                <apex:outputText value="{!user.closest} km"/>
+                                                        </td>
+                                                    </tr>
+                                                
+                                                </apex:repeat>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="slds-button-group" role="group">
+                                  <input type="button" value="Sluit matching" class="slds-button slds-button--neutral" onclick="closeMatching();"></input>
+                                  <input type="button" class="slds-button slds-button--neutral" onclick="finishMatching();" value="Finish matching (Koppel behandelaar)"></input>
+                                </div>
+                            
+                            </div>
+                        </div>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                <apex:outputPanel id="voorDoss" rendered="{!showVoorDoos}">
+                    <div class="slds">   
+                        <div class="slds-page-header" role="banner">
+                            Voorlopig gematchde Dossiers<br/>
+                            <div class="slds-grid">
+                                <apex:outputText value="{!focus}" id="focus" style="display:none;"/>
+                                <apex:outputText value="{!sortField}" id="sortField" style="display:none;"/>
+                                <apex:outputText value="{!sortDirection}" id="sortDirection" style="display:none;"/>
+                                
+                                <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+                                    <thead>
+                                        <tr class="slds-text-heading--label">
+                                            <th scope="col" title="Opportunity Name">
+                                                <div class="slds-truncate"><input type="checkbox" id="selectunselectall" onchange="checkAll();"  /></div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate"><a href="#voorDoss" id="Name1" onclick="sortByFiledVoorScr('Name');">{!$ObjectType.Dossier__c.Fields.Name.Label}</a></div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate"><a href="#voorDoos" id="AccountName1" onclick="sortByFiledVoorScr('AccountName');">{!$ObjectType.Dossier__c.Fields.Relatie__c.Label}</a></div>
+                                            </th>
+                                            <th scope="col" >
+                                                <div class="slds-truncate"><a href="#voorDoss" id="Datum1" onclick="sortByFiledVoorScr('Datum');">{!$ObjectType.Dossier__c.Fields.Ingangsdatum__c.Label}</a></div>
+                                            </th>
+                                            <th scope="col" >
+                                                <div class="slds-truncate"><a href="#voorDoss" id="End1" onclick="sortByFiledVoorScr('End');">{!$ObjectType.Dossier__c.Fields.Einddatum__c.Label}</a></div>
+                                            </th>
+                                            <th scope="col" >
+                                                <div class="slds-truncate"><a href="#voorDoss" id="User1" onclick="sortByFiledVoorScr('User');">{!$ObjectType.Dossier__c.Fields.Handler__c.Label}</a></div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <apex:repeat value="{!voorDossiers}" var="dos" id="voors">
+                                            <tr class="slds-hint-parent">
+                                                <td class="slds-cell-shrink" data-label="Select Row">
+                                                    <apex:inputCheckbox value="{!dos.IsSelected}" id="f01" styleClass="voorCheckbox" onclick="checkboxWasChanged2(this);"/>
+                                                </td>
+                                                <td class="slds-cell-shrink" data-label="Select Row">
+                                                            <apex:outputLink value="/{!dos.dossier.id}">{!dos.dossier.Name}</apex:outputLink>
+                                                </td>
+                                                <td class="slds-cell-shrink" data-label="Select Row">
+                                                            <apex:outputLink value="/{!dos.dossier.Relatie__c}">{!dos.dossier.Relatie__r.Name}</apex:outputLink>
+                                                </td>
+                                                
+                                                <td class="slds-cell-shrink" data-label="Select Row">   
+                                                    <apex:outputField value="{!dos.dossier.Ingangsdatum__c}"/>
+                                                </td>
+                                                <td class="slds-cell-shrink" data-label="Select Row">   
+                                                    <apex:outputField value="{!dos.dossier.Einddatum__c}"/>
+                                                </td>
+                                                <td class="slds-cell-shrink" data-label="Select Row">
+                                                    <apex:outputLink value="/{!dos.dossier.handler__c}">    
+                                                        {!dos.dossier.Handler__r.Name}
+                                                    </apex:outputLink>
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <input  class="slds-button slds-button--neutral" type="button" onclick ="setStatusToOpen();" value="Match definitief"/>
+                            <input  class="slds-button slds-button--neutral" type="button" onclick ="unmatch();" value="Terugzetten"/>
+                        </div>
+                    </div>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!!showUsers}" id="todayMatched">
+                    <div class="slds">   
+                        <div class="slds-page-header" role="banner">
+                        Vandaag gematchde Dossiers<br/>
+                            <div class="slds-grid">
+                                
+                                <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+                                    <thead>
+                                        <tr class="slds-text-heading--label">
+                                            
+                                            <th scope="col">
+                                                <div class="slds-truncate">{!$ObjectType.Dossier__c.Fields.Name.Label}</div>
+                                            </th>
+                                            <th scope="col">
+                                                <div class="slds-truncate">{!$ObjectType.Dossier__c.Fields.Relatie__c.Label}</div>
+                                            </th>
+                                            <th scope="col" >
+                                                <div class="slds-truncate">{!$ObjectType.Dossier__c.Fields.Ingangsdatum__c.Label}</div>
+                                            </th>
+                                            <th scope="col" >
+                                                <div class="slds-truncate">{!$ObjectType.Dossier__c.Fields.Einddatum__c.Label}</div>
+                                            </th>
+                                            <th scope="col" >
+                                                <div class="slds-truncate">{!$ObjectType.Dossier__c.Fields.Handler__c.Label}</div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <apex:repeat value="{!todayDossiers}" var="dos">
+                                            <tr class="slds-hint-parent">
+                                                
+                                                <td class="slds-cell-shrink" data-label="Select Row">
+                                                    <apex:outputLink value="/{!dos.id}">
+                                                          {!dos.Name}
+                                                    </apex:outputLink>
+                                                </td>
+                                                <td class="slds-cell-shrink" data-label="Select Row">   
+                                                    <apex:outputField value="{!dos.Relatie__r.Name}"/>
+                                                </td>
+                                                <td class="slds-cell-shrink" data-label="Select Row">   
+                                                    <apex:outputField value="{!dos.Ingangsdatum__c}"/>
+                                                </td>
+                                                <td class="slds-cell-shrink" data-label="Select Row">   
+                                                    <apex:outputField value="{!dos.Einddatum__c}"/>
+                                                </td>
+                                                <td class="slds-cell-shrink" data-label="Select Row">
+                                                    <apex:outputLink value="/{!dos.handler__c}">    
+                                                        {!dos.Handler__r.Name}
+                                                    </apex:outputLink>
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </apex:outputPanel>
+                
+            </apex:form>
+            <script type="text/javascript">
+            
+               
+                function focusError () {
+                    console.log('HERER' + $("[id$='erMsg']").text());
+                    if ($("[id$='erMsg']").text() != '' ) {
+                        console.log('in ');
+                        //$("[id$='error']").focus();
+                        $('html, body').animate({ scrollTop: 0 }, 'fast');
+                    }
+                }
+                function startMatching () {
+                    console.log('startMatching');
+                    findAllUsers();
+                    
+                }
+                function setStatusToOpen(){
+                    setOpenAct();
+                }
+                function closeMatching () {
+                    console.log('closeMatching');
+                    closeMatch();
+                }
+                function finishMatching(){
+                    finishMatchingAct();
+                    console.log('finished');
+                }   
+                function checkboxWasChanged(ch) {
+                    console.log('checkboxes' + ch);
+                    $('.unmatchedCheckbox').not(ch).prop('checked', false);  
+                }
+                function checkboxWasChanged1(ch) {
+                    console.log('checkboxes' + ch);
+                    $('.userCheckbox').not(ch).prop('checked', false);  
+                }
+                function checkboxWasChanged2(ch) {
+                    console.log('checkboxes' + ch);
+                    $('.voorCheckbox').not(ch).prop('checked', false);  
+                }
+                function filterUnmatched () {
+                    console.log($("[id$='searchNumberId']").val());
+                    console.log($("[id$='searchNameId']").val());
+                    console.log($("[id$='searchAddressId']").val());
+                    
+                    filterUnAct($("[id$='searchNumberId']").val(), $("[id$='searchNameId']").val(), 
+                                        $("[id$='searchAddressId']").val());
+                    
+                }
+            
+                function filterBySkillUser () {
+                    
+                    addFilterAct();
+                    
+                    
+                }
+                
+                function filterByProductUser () {
+                    
+                    addFilterPrAct();
+                }
+                function filterByUserName(){
+                    
+                    addFilterAct();
+                    
+                }
+                var clicks = 0;
+                var lastClicked;
+                function sortByFiledScr(param) {
+                    lastClicked = param;
+                    console.log(param);
+                    clicks++;
+                    if(clicks % 2) {
+                        console.log('ASCENDING');
+                        sortByFiledAct('ASCENDING', param);
+                        console.log($("[id$='"+param+"']"));
+                        
+                    } else {
+                        console.log('DESCENDING');
+                        sortByFiledAct('DESCENDING', param);
+                        
+                    }
+                    
+                }
+                function unmatch() {
+                    unmatchAction();
+                }
+                function sortByFiledUserScr(param) {
+                    lastClicked = param+'2';
+                    console.log(param);
+                    clicks++;
+                    if(clicks % 2) {
+                        console.log('ASCENDING');
+                        sortByFiledUserAct('ASCENDING', param);
+                        console.log($("[id$='"+param+"']"));
+                        
+                    } else {
+                        console.log('DESCENDING');
+                        sortByFiledUserAct('DESCENDING', param);
+                        
+                    }
+                    
+                }
+                function sortByFiledVoorScr(param) {
+                    lastClicked = param+'1';
+                    console.log(param);
+                    clicks++;
+                    if(clicks % 2) {
+                        console.log('ASCENDING');
+                        sortByFiledVoorAct('ASCENDING', param);
+                        console.log($("[id$='"+param+"']"));
+                        //addArrow(param+'1');
+                    } else {
+                        console.log('DESCENDING');
+                        sortByFiledVoorAct('DESCENDING', param);
+                        //addArrow(param+'1');
+                    }
+                    
+                }
+                function addArrow() {
+                focusError ();
+                    var sortDirection = '';
+                    if(clicks % 2) {
+                        sortDirection = 'ASCENDING';
+                    } else {
+                        sortDirection = 'DescENDING';
+                    }
+                    
+                    console.log('addArrow'+lastClicked);
+                    if (sortDirection == 'ASCENDING') {
+                        $("#"+lastClicked).after('<apex:image styleClass="down" value="{!$Resource.down}" width="15px" height="20px"/>');
+                    } else {
+                        $("#"+lastClicked).after('<apex:image styleClass="up" value="{!$Resource.up}" width="15px" height="20px"/>');
+                    }
+                    setFocusAndSort();
+                    
+                }
+                
+                function setFocusAndSort () {
+                    var toFocus = $("[id$='focus']").text();
+                    console.log('toFocus:'+ toFocus);
+                    if (toFocus == null) {
+                        toFocus = $("[id$='focus1']").text()+'Id';
+                    }
+                    var sortedField = $("[id$='sortField']").text();
+                    var sortDirection = $("[id$='sortDirection']").text();
+                    console.log('toFocus:'+ document.getElementById(toFocus)+ ' sortField ' + sortedField + ' ' + capturedFieldId);
+                     if (capturedFieldId) {
+                        if(capturedFieldId != null) {
+                            var focusedElement = document.getElementById(capturedFieldId);
+                            if (focusedElement) {
+                               SetCaretAtEnd(document.getElementById(capturedFieldId));
+                               console.log('capturedFieldId'+capturedFieldId);
+                            } 
+                        }else{
+                            console.log('NULL'+capturedFieldId);
+                        }
+                    } else if (toFocus != '' ){
+                        console.log('toFocus'+document.getElementById(toFocus));
+                        SetCaretAtEnd(document.getElementById(toFocus));
+                        
+                    } else {
+                        console.log('name2 ' + $("[id$='Name2Id']"));
+                         SetCaretAtEnd($("[id$='Name2Id']"));
+                    }
+                
+                    /*SetCaretAtEnd($("[id$='"+toFocus+"']").nextSibling);
+                    if (sortDirection == 'ASCENDING') {
+                        $("#"+sortedField).parent().prepend('<apex:image styleClass="down" value="{!$Resource.down}" width="15px" height="20px"/>');
+                    } else {
+                        $("#"+sortedField).parent().prepend('<apex:image styleClass="up" value="{!$Resource.up}" width="15px" height="20px"/>');
+                    }*/
+                }
+                function SetCaretAtEnd(elem) {
+                    console.log('SetCaretAtEnd' + elem );
+                    var elemLen = elem.value.length;
+                    // For IE Only
+                    if (document.selection) {
+                        // Set focus
+                        elem.focus();
+                        // Use IE Ranges
+                        var oSel = document.selection.createRange();
+                        // Reset position to 0 & then set at end
+                        oSel.moveStart('character', -elemLen);
+                        oSel.moveStart('character', elemLen);
+                        oSel.moveEnd('character', 0);
+                        oSel.select();
+                    }
+                    else if (elem.selectionStart || elem.selectionStart == '0') {
+                        // Firefox/Chrome
+                        elem.selectionStart = elemLen;
+                        elem.selectionEnd = elemLen;
+                        elem.focus();
+                    } // if
+                } // SetCaretAtEnd()
+                var capturedFieldId = null;
+                function captureFocus () {
+
+                    if (document.activeElement != null) {
+                        capturedFieldId = document.activeElement.id;
+                    } else {
+                        capturedFieldId = null;
+                    }
+                    console.log('in focus' + capturedFieldId);
+                }
+                function checkAll(){
+                    if ($("[id$='selectunselectall']").is(':checked') ) {
+                        console.log('here');
+                      $('input[type=checkbox][id$="f01"]').attr('checked',true);
+                    }
+                    else {
+                      $('input[type=checkbox][id$="f01"]').attr('checked',false);
+                    }
+                }
+            </script>
+        </body>
+    </html>
+</apex:page>

@@ -1,0 +1,109 @@
+<apex:page showHeader="true" sidebar="true" standardController="Dossier__c" extensions="DossierEmailExtension" docType="html-5.0">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">   
+        <head>
+            
+            <!-- <apex:includeLightning /> -->
+            <apex:stylesheet value="{!URLFOR($Resource.DossierEmail, 'assets/styles/salesforce-lightning-design-system-vf.min.css')}" />
+            <style type="text/css">
+                .slds-theme--error {
+                    color: #fff;
+                    background-color: #c23934;
+                }
+                .slds-box {
+                    padding: 1rem;
+                    border-radius: .25rem;
+                    background-clip: padding-box;
+                    border: 1px solid #d8dde6;
+                }
+                .slds-form--stacked .slds-form-element+.slds-form-element {
+                    margin-top: 1rem !important;
+                }
+                #display-inline-block {
+                    display: inline-block;
+                    max-width: 70%;
+                  
+                }
+
+                .label-custom-style {
+                    min-width: 60px;
+                    font-size: .85rem!important;
+                }
+                
+            </style>
+        </head>
+        <body>
+            <div class="DossierEmail">
+                <apex:form styleClass="slds-form--stacked" id="form">
+
+                    <apex:outputPanel rendered="{!errorMessage != null}">
+                        <div class="slds-box slds-theme--error">
+                          <!-- <p>{!errorMessage}</p> -->
+                          <p><apex:outputText value="{!errorMessage}" escape="false"/></p>
+                        </div>
+                        <br />
+                    </apex:outputPanel>
+
+                <div class="slds-form--horizontal">
+
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label label-custom-style" for="email-to">{!$Label.To}</label>
+                        <div class="slds-form-element__control" id="display-inline-block" style="float:right; margin-top:2px;">
+                            <!-- <input id="email-to" class="slds-input" type="email" placeholder="example@email.com" /> -->
+                            <apex:inputText value="{!toAddress}" styleClass="slds-input" id="email-to"/>
+                        </div>
+                    </div>
+
+                    
+                    <div class="slds-form-element">
+                    <!--a onclick="showCC()" id="ccLink" style="position: relative; left: 93%;">Cc</a-->
+                    <div id="ccRecipient"><!-- style="display: none;"-->
+                        <label class="slds-form-element__label label-custom-style" for="email-cc">Cc</label>
+                        <div class="slds-form-element__control" id="display-inline-block" style="float:right;">
+                            <!-- <input id="email-bcc" class="slds-input" type="email" placeholder="example@email.com" /> -->
+                            <apex:inputText value="{!ccAddress}" styleClass="slds-input" id="email-cc"/>
+                        </div>
+                    </div>
+                    </div>
+
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label label-custom-style" for="email-bcc">Bcc</label>
+                        <div class="slds-form-element__control" id="display-inline-block" style="float:right; ">
+                            <!-- <input id="email-bcc" class="slds-input" type="email" placeholder="example@email.com" /> -->
+                            <apex:inputText value="{!bccAddress}" styleClass="slds-input" id="email-bcc"/>
+                        </div>
+                    </div>
+
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label label-custom-style" for="email-subject">{!$Label.Subject}</label>
+                        <div class="slds-form-element__control" id="display-inline-block" style=" padding-top:2px;margin-left:10%" >
+                            <!-- <input id="email-subject" class="slds-input" type="text" /> -->
+                            <apex:inputText value="{!emailSubject}" styleClass="slds-input" id="email-subject"/>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-form-element">
+                        <div class="slds-form-element__control">
+                            <apex:inputField value="{!Dossier__c.EmailBody__c}" />
+                        </div>
+                    </div>
+
+                    <br />
+
+                    <div class="slds-col slds-no-flex slds-align-middle" style="float: right;">
+                        <div class="slds-button-group" role="group">
+                            <apex:commandButton value="{!$Label.Send}" action="{!sendMail}" styleclass="slds-button slds-button--brand" />
+                        </div>
+                    </div>
+
+                </div>
+                </apex:form>
+                <script type="text/javascript">
+                    function showCC() {
+                        document.getElementById("ccRecipient").removeAttribute("style");
+                        document.getElementById("ccLink").style.display = "none";
+                    }
+                </script>
+            </div>
+        </body>
+    </html>
+</apex:page>
